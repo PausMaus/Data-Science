@@ -1,0 +1,75 @@
+import os
+import pandas as pd
+from googleapiclient.discovery import build
+
+api_key = 'AIzaSyCeBsrT0G7CvjwEdicQPngLQtgpwyyKOSk'
+
+youtube = build('youtube','v3', developerKey=api_key)
+
+
+
+
+channel_id1 = 'UCsBjURrPoezykLs9EqgamOA'
+channel_id2 = 'UCpqCsO-fb2_OzVxm7J9MslA'
+
+
+
+
+ch_request1 = youtube.channels().list(
+        part ='statistics' ,
+        id = channel_id1,
+        maxResults=50,
+        
+     
+    )
+
+
+ch_request2 = youtube.channels().list(
+        part ='statistics' ,
+        id = channel_id2,
+        maxResults=50,
+        
+     
+    )
+
+
+
+ch_response1  = ch_request1.execute()
+ch_response2  = ch_request2.execute()
+
+
+
+for item in ch_response1['items']:
+    geral = item['statistics']
+    views = item['statistics'] ['viewCount']
+    subscribers = item['statistics'] ['subscriberCount']
+    n_videos = item['statistics'] ['videoCount']
+    
+for item in ch_response2['items']:
+    geral2 = item['statistics']
+    views2 = item['statistics'] ['viewCount']
+    subscribers2 = item['statistics'] ['subscriberCount']
+    n_videos2 = item['statistics'] ['videoCount']
+    
+     
+    
+    
+print(views)
+print(subscribers)
+print(n_videos)
+print(views2)
+print(subscribers2)
+print(n_videos2)
+    
+
+
+
+data = {'views': [views, views2],
+        'subscribers': [subscribers , subscribers2], 
+        'n_videos': [ n_videos , n_videos2]
+        }
+
+df = pd.DataFrame(data)
+
+print(df)
+df.to_excel('03.xlsx', sheet_name='sheet1', index=False)
