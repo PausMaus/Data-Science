@@ -1,0 +1,63 @@
+import os
+from PyPDF2 import PdfReader
+from collections import Counter
+
+# Diretório que contém os arquivos PDF
+pdf_dir = "caminho_do_meu_diretório"
+
+# Lista todos os arquivos no diretório
+files = os.listdir(pdf_dir)
+
+# Filtra a lista para incluir apenas arquivos PDF
+pdf_files = [file for file in files if file.endswith(".pdf")]
+
+line_counter = Counter()
+
+for pdf_file_name in pdf_files:
+    # Cria o caminho completo para o arquivo PDF
+    pdf_file_path = os.path.join(pdf_dir, pdf_file_name)
+    
+    # Abre o arquivo PDF em modo de leitura binária
+    with open(pdf_file_path, "rb") as pdf_file:
+        # Cria um objeto PdfReader
+        pdf_reader = PdfReader(pdf_file)
+        
+        # Obtém o número de páginas no arquivo PDF
+        num_pages = len(pdf_reader.pages)
+        
+        # Lê o texto de cada página
+        for page_num in range(num_pages):
+            page = pdf_reader.pages[page_num]
+            page_text = page.extract_text()
+            
+            # Verifica se a página contém "Principais competências"
+            if "Principais competências" in page_text:
+                # Encontra a posição da string "Principais competências"
+                start = page_text.index("Principais competências") + len("Principais competências")
+                
+                # Verifica se a página contém "Languages"
+                if "Languages" in page_text:
+                    # Encontra a posição da string "Languages"
+                    end = page_text.index("Languages")
+                    
+                    # Adiciona as linhas entre "Principais competências" e "Languages" ao contador
+                    line_counter.update(page_text[start:end].splitlines())
+                elif "Certifications" in page_text:
+                    # Encontra a posição da string "Certifications"
+                    end = page_text.index("Certifications")
+                    
+                    # Adiciona as linhas entre "Principais competências" e "Certifications" ao contador
+                    line_counter.update(page_text[start:end].splitlines())
+                elif "Resumo" in page_text:
+                    # Encontra a posição da string "Resumo"
+                    end = page_text.index("Resumo")
+                    
+                    # Adiciona as linhas entre "Principais competências" e "Resumo" ao contador
+                    line_counter.update(page_text[start:end].splitlines())
+                else:
+                    # Se "Languages", "Certifications" e "Resumo" não estiverem na página, adiciona todas as linhas abaixo de "Principais competências" ao contador
+                    line_counter.update(page_text[start:].splitlines())
+
+# Imprime as linhas em ordem de frequência, da mais frequente para a menos frequente
+for line, count in line_counter.most_common():
+    print(f"{line}: {count}")
