@@ -3,7 +3,7 @@ import googleapiclient.discovery
 import csv
 
 # Create YouTube object
-youtube = googleapiclient.discovery.build("youtube", "v3", developerKey = "AIzaSyCeBsrT0G7CvjwEdicQPngLQtgpwyyKOSk")
+youtube = googleapiclient.discovery.build("youtube", "v3", developerKey = "sua_chave")
 
 # Define channel IDs list
 
