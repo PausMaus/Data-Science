@@ -3,7 +3,7 @@ import os
 import re
 from googleapiclient.discovery import build
 
-api_key = 'AIzaSyCeBsrT0G7CvjwEdicQPngLQtgpwyyKOSk'
+api_key = 'sua_chave'
 
 youtube = build('youtube','v3', developerKey=api_key)
 
