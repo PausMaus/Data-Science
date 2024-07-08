@@ -1,0 +1,131 @@
+from googleapiclient.discovery import build
+from datetime import datetime
+import pandas as pd
+
+api_key = '1'
+print("Mineradora 'Em Alta' Online ", "chave API:", api_key)
+
+resposta = input("Pressione 's' para ativar a chave API ou 'n' para abortar: ")
+
+if resposta.lower() == 's':
+    # Continuar com o programa
+    print("Autenticando chave API...")
+
+    # Substitua 'SUA_CHAVE_API' pela sua chave de API real
+    api_key = 'SUA_CHAVE_API'
+    youtube = build('youtube', 'v3', developerKey=api_key)
+    
+elif resposta.lower() == 'n':
+    # Abortar a operação
+    print("Operação abortada.")
+else:
+    print("Resposta inválida. Tente novamente com 's' ou 'n'.")
+
+
+
+print("insira o código da playlist:")
+playlist_id = input()
+
+
+
+# Recupera os detalhes da playlist
+playlist_request = youtube.playlistItems().list(
+    part='snippet',
+    playlistId=playlist_id,
+    maxResults=50
+)
+
+playlist_response = playlist_request.execute()
+
+
+
+
+# Lista para armazenar os dados
+videos_data = []
+
+# Itera sobre os itens e recupera as informações necessárias
+for item in playlist_response['items']:
+    video_id = item['snippet']['resourceId']['videoId']  # Recupera o ID do vídeo
+    title = item['snippet']['title']
+    
+    
+    # Faz uma nova requisição para obter detalhes do vídeo específico
+    video_request = youtube.videos().list(
+        part='snippet,contentDetails,statistics,status, topicDetails',
+        id=video_id
+    )
+    video_response = video_request.execute()
+
+    
+
+    # Recupera informações adicionais do vídeo
+    for video in video_response['items']:
+        video_title = video['snippet']['title']  # Confirma o título do vídeo
+        channel_id = video['snippet']['channelId']
+        #categorias = video['topicDetails']['topicCategories']
+        duration = video['contentDetails']['duration']
+        view_count = video['statistics']['viewCount']
+        
+        # Verifica se 'likeCount' existe no dicionário
+        if 'likeCount' in video['statistics']:
+            like_count = video['statistics']['likeCount']
+        else:
+            like_count = None  # ou algum outro valor padrão
+    
+
+        channel_title = video['snippet']['channelTitle']
+        publicado = video['snippet']['publishedAt'] 
+        
+        videos_data.append([video_title,video_id, channel_id, channel_title, duration, view_count, like_count, publicado,])
+
+
+
+
+
+timestamp = datetime.now()
+
+print("Carregando dataframe...")
+
+# Cria um DataFrame com os dados
+videos_df = pd.DataFrame(videos_data, columns=['Título','ID do Vídeo', 'ID do Canal', 'Canal', 'Duração', 'Visualizações','Curtidas', 'Publicado'])
+videos_df['Visualizações'] = pd.to_numeric(videos_df['Visualizações'], errors='coerce')
+videos_df['Curtidas'] = pd.to_numeric(videos_df['Curtidas'], errors='coerce')
+videos_df['Dia'] = timestamp.date()  # Obtém a data
+videos_df['Hora Local'] = timestamp.time()  # Obtém a hora
+
+tipos_de_dados = videos_df.dtypes
+
+print("Conferencia de dados dataframe:")
+print(tipos_de_dados)
+
+print("Fazendo Bolinhos...")
+
+# Pergunta ao usuário se deseja continuar
+resposta = input("Pressione Enter para continuar ou digite 'abortar' para sair: ")
+
+if resposta.lower() == 'abortar':
+    print("Operação abortada.")
+else:
+    print("Continuando com a próxima etapa...")
+
+# Imprime as informações
+print(videos_df)
+
+print(timestamp)
+# Pergunta ao usuário se deseja continuar
+confirmacao = input('Deseja exportar os dados para Excel? (s/n): ')
+
+
+
+# Verifica a resposta do usuário
+if confirmacao.lower() == 's':
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H%M%S')
+    # Define o caminho e o nome do arquivo com a data e hora
+    file_path = rf'CAMINHO_ARQUIVO(extrator V1.1) {timestamp}.xlsx'
+
+    # Exporta para um arquivo Excel com o nome contendo a data e horas
+
+    videos_df.to_excel(file_path, index=False)
+    print('Dados exportados com sucesso!')
+else:
+    print('Exportação cancelada.')
